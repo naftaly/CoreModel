@@ -19,6 +19,17 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol ModelAdapter <NSObject>
+
+@required
+
+/*
+ * take in a blob of data and return a property list object representation
+ */
+- (id)modelAdapterPropertyListFromData:(NSData*)data error:(NSError**)error;
+
+@end
+
 @interface Model : NSObject
 
 /* 
@@ -32,6 +43,11 @@
  * Overload the following class methods in your subclass to change behavior
  *
  */
+
+/*
+ * return a custom adapter to use to convert your data to property list objects. default wraps NSJSONSerialization.
+ */
++ (id<ModelAdapter>)modelAdapter;
 
 /* 
  * given JSON, return the JSON key that represents the root object for the object needing decoding
@@ -71,3 +87,5 @@
 + (NSURLSessionDataTask*)modelTaskURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof Model*>* models, NSURLResponse* response, NSError* error))completionHandler;
 
 @end
+
+

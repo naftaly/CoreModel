@@ -20,6 +20,25 @@
 #import "Model.h"
 #import <objc/runtime.h>
 
+@interface ModelJSONAdapter : NSObject <ModelAdapter>
+@end
+
+@implementation ModelJSONAdapter
+
+- (id)modelAdapterPropertyListFromData:(NSData *)data error:(NSError *__autoreleasing *)error
+{
+    id json = nil;
+    @try {
+        json = [NSJSONSerialization JSONObjectWithData:data options:0 error:error];
+    }
+    @catch (NSException *exception) {
+        json = nil;
+    }
+    return json;
+}
+
+@end
+
 @interface ModelProperty : NSObject
 
 @property (nonatomic,strong) NSString* name;
@@ -227,16 +246,14 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return [self initWithJSON:[[self class] JSONFromData:data error:error]];
 }
 
++ (id<ModelAdapter>)modelAdapter
+{
+    return [[ModelJSONAdapter alloc] init];
+}
+
 + (id)JSONFromData:(NSData*)data error:(NSError**)error
 {
-    id json = nil;
-    @try {
-        json = [NSJSONSerialization JSONObjectWithData:data options:0 error:error];
-    }
-    @catch (NSException *exception) {
-        json = nil;
-    }
-    return json;
+    return [[self modelAdapter] modelAdapterPropertyListFromData:data error:error];
 }
 
 + (NSArray<__kindof Model*>*)modelsFromJSON:(id)json
