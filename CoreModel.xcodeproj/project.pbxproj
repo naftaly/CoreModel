@@ -12,6 +12,8 @@
 		FA1E24071C84BF9B0045D6EF /* CoreModelTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E24061C84BF9B0045D6EF /* CoreModelTests.m */; };
 		FA1E24131C84BFA50045D6EF /* Model.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E24111C84BFA50045D6EF /* Model.m */; };
 		FA1E24141C84BFA50045D6EF /* Model.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E24121C84BFA50045D6EF /* Model.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FA1E24161C84C6D10045D6EF /* test.json in Resources */ = {isa = PBXBuildFile; fileRef = FA1E24151C84C6D10045D6EF /* test.json */; };
+		FA1E24181C84DD090045D6EF /* levels.json in Resources */ = {isa = PBXBuildFile; fileRef = FA1E24171C84DD090045D6EF /* levels.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,6 +35,8 @@
 		FA1E24081C84BF9B0045D6EF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FA1E24111C84BFA50045D6EF /* Model.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Model.m; sourceTree = "<group>"; };
 		FA1E24121C84BFA50045D6EF /* Model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
+		FA1E24151C84C6D10045D6EF /* test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = test.json; sourceTree = "<group>"; };
+		FA1E24171C84DD090045D6EF /* levels.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = levels.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +91,8 @@
 			isa = PBXGroup;
 			children = (
 				FA1E24061C84BF9B0045D6EF /* CoreModelTests.m */,
+				FA1E24171C84DD090045D6EF /* levels.json */,
+				FA1E24151C84C6D10045D6EF /* test.json */,
 				FA1E24081C84BF9B0045D6EF /* Info.plist */,
 			);
 			path = CoreModelTests;
@@ -190,6 +196,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA1E24181C84DD090045D6EF /* levels.json in Resources */,
+				FA1E24161C84C6D10045D6EF /* test.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,6 +392,7 @@
 				FA1E240D1C84BF9B0045D6EF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		FA1E240E1C84BF9B0045D6EF /* Build configuration list for PBXNativeTarget "CoreModelTests" */ = {
 			isa = XCConfigurationList;
@@ -392,6 +401,7 @@
 				FA1E24101C84BF9B0045D6EF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -175,15 +175,21 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
                     case 'T':
                     {
                         NSString* s = [NSString stringWithUTF8String:propAtt[c].value];
-                        s = [s substringFromIndex:2];
-                        s = [s substringToIndex:s.length-1];
-                        modelProperty.typeClass = NSClassFromString(s);
+                        if ( s.length == 1 )
+                        {
+                            modelProperty.typeEncoding = propAtt[c].value[0];
+                        }
+                        else
+                        {
+                            s = [s substringFromIndex:2];
+                            s = [s substringToIndex:s.length-1];
+                            modelProperty.typeClass = NSClassFromString(s);
+                        }
                     }
                         break;
                         
                     default:
                     {
-                        //NSLog( @"%s = %s", propAtt[c].name, propAtt[c].value );
                     }
                         break;
                 }
@@ -198,8 +204,6 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     }
     
     [[self class] setModelProperties:modelPropertyMap forClass:[self class]];
-    
-    //NSLog( @"%@", modelPropertyMap );
 }
 
 - (instancetype)init
@@ -242,18 +246,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     
     if ( [json isKindOfClass:[NSArray class]] )
     {
-        NSArray* array = json;
-        NSMutableArray* results = [NSMutableArray array];
-        for ( id it in array )
-        {
-            if ( [it isKindOfClass:[NSDictionary class]] )
-            {
-                id obj = [[[self class] alloc] initWithJSON:it];
-                if ( obj )
-                    [results addObject:obj];
-            }
-        }
-        return [results copy];
+        return [self _loadModelFromArray:json property:nil];
     }
     else if ( [json isKindOfClass:[NSDictionary class]] )
     {
@@ -262,27 +255,8 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         NSString* rootKey = [self modelJSONKeyForClassRoot];
         if ( rootKey && dict[rootKey] )
         {
-            if ( [dict[rootKey] isKindOfClass:[NSArray class]] )
-            {
-                NSMutableArray<__kindof Model*>* results = [NSMutableArray array];
-                NSArray<NSDictionary*>* items = dict[rootKey];
-                for ( NSDictionary* it in items )
-                {
-                    if ( [it isKindOfClass:[NSDictionary class]] )
-                    {
-                        id obj = [[[self class] alloc] initWithJSON:it];
-                        if ( obj )
-                            [results addObject:obj];
-                    }
-                }
-                return [results copy];
-            }
-            else if ( [dict[rootKey] isKindOfClass:[NSDictionary class]] )
-            {
-                id obj = [[[self class] alloc] initWithJSON:dict[rootKey]];
-                if ( obj )
-                    return @[ obj ];
-            }
+            id root = dict[rootKey];
+            return [self modelsFromJSON:root];
         }
         else
         {
@@ -350,6 +324,73 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return _fmt;
 }
 
++ (id)modelConvertJSONObject:(NSObject*)jsonObj toTypeEncoding:(char)typeEncoding
+{
+    // need to convert value to type class
+    switch (typeEncoding)
+    {
+        case _C_SHT:
+        case _C_USHT:
+        case _C_INT:
+        case _C_UINT:
+        case _C_LNG:
+        case _C_ULNG:
+        case _C_LNG_LNG:
+        case _C_ULNG_LNG:
+        case _C_FLT:
+        case _C_DBL:
+        case _C_BFLD:
+        case _C_BOOL:
+        {
+            if ( [jsonObj isKindOfClass:[NSNumber class]] )
+                return jsonObj;
+            if ( [jsonObj isKindOfClass:[NSString class]] )
+                return @([(NSString*)jsonObj doubleValue]);
+        }
+            break;
+    }
+    
+    char c[2] = { typeEncoding, 0 };
+    NSString* type = [NSString stringWithUTF8String:c];
+    
+    NSLog( @"<%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
+    return nil;
+}
+
++ (NSArray*)_loadModelFromArray:(NSArray*)array property:(ModelProperty*)property
+{
+    Class arrayModelClass = property ? [[self class] modelClassForJSONKey:property.name] : self;
+    if ( arrayModelClass )
+    {
+        NSMutableArray* results = [NSMutableArray array];
+        for ( NSObject* it in array )
+        {
+            if ( [it isKindOfClass:[NSDictionary class]] )
+            {
+                id item = [[arrayModelClass alloc] initWithJSON:(NSDictionary*)it];
+                if ( item )
+                    [results addObject:item];
+            }
+            else if ( [it isKindOfClass:[NSNull class]] )
+            {
+            }
+            else
+                NSLog( @"[CoreModel] found %@ when expecting NSDictionary", NSStringFromClass(it.class) );
+        }
+        return [results copy];
+    }
+    
+    return [array copy];
+}
+
++ (id)_loadModelFromDictionary:(NSDictionary*)dict property:(ModelProperty*)property
+{
+    Class cls = property ? ( [property.typeClass isSubclassOfClass:[Model class]] ? property.typeClass : nil ) : self;
+    if ( cls )
+        return [[cls alloc] initWithJSON:dict];
+    return [dict copy];
+}
+
 - (void)_loadModelFromJSON:(NSDictionary<NSString*,id>*)json
 {
     for ( NSString* inKey in json )
@@ -373,24 +414,27 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         // check the kind of the value and  evaluate it
         if ( [obj isKindOfClass:[NSArray class]] )
         {
-            Class arrayModelClass = [[self class] modelClassForJSONKey:modelKey];
-            if ( arrayModelClass )
-                evaluatedObj = [arrayModelClass modelsFromJSON:obj];
+            evaluatedObj = [[self class] _loadModelFromArray:obj property:modelProperty];
         }
-        else if ( [obj isKindOfClass:[NSDictionary class]] && [modelProperty.typeClass isSubclassOfClass:[Model class]] )
+        else if ( [obj isKindOfClass:[NSDictionary class]] )
         {
-            evaluatedObj = [[modelProperty.typeClass alloc] initWithJSON:obj];
+            evaluatedObj = [[self class] _loadModelFromDictionary:obj property:modelProperty];
         }
-        else if ( [obj isKindOfClass:modelProperty.typeClass] )
+        else if ( modelProperty.typeClass && [obj isKindOfClass:modelProperty.typeClass] )
         {
             evaluatedObj = obj;
+        }
+        else if ( modelProperty.typeEncoding != 0 )
+        {
+            evaluatedObj = [[self class] modelConvertJSONObject:obj toTypeEncoding:modelProperty.typeEncoding];
         }
         else
         {
             evaluatedObj = [[self class] modelConvertJSONObject:obj toType:modelProperty.typeClass];
         }
         
-        [self setValue:evaluatedObj forKey:modelProperty.name];
+        if ( evaluatedObj )
+            [self setValue:evaluatedObj forKey:modelProperty.name];
     }
     
 }

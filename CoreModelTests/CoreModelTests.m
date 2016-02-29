@@ -7,6 +7,84 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <CoreModel/CoreModel.h>
+
+@interface Person : Model
+
+@property (nonatomic,copy) NSString* identifier;
+@property (nonatomic,copy) NSString* name;
+
+@end
+
+@interface Action : Model
+
+@property (nonatomic,copy) NSString* name;
+@property (nonatomic,copy) NSURL* link;
+
+@end
+
+@interface Item : Model
+
+@property (nonatomic,copy) NSString* identifier;
+@property (nonatomic,strong) Person* from;
+@property (nonatomic,copy) NSString* message;
+@property (nonatomic,copy) NSArray<Action*>* actions;
+@property (nonatomic,strong) NSString* type;
+@property (nonatomic,strong) NSDate* created_time;
+@property (nonatomic,strong) NSDate* updated_time;
+
+@end
+
+@implementation Item
+
++ (NSString*)modelJSONKeyForClassRoot
+{
+    return @"data";
+}
+
++ (NSString*)modelPropertyNameForJSONkey:(NSString*)jsonKey
+{
+    if ( [jsonKey isEqualToString:@"id"] )
+        return @"identifier";
+    return [super modelPropertyNameForJSONkey:jsonKey];
+}
+
++ (Class)modelClassForJSONKey:(NSString*)jsonKey
+{
+    if ( [jsonKey isEqualToString:@"actions"] )
+        return [Action class];
+    return [super modelClassForJSONKey:jsonKey];
+}
+
+@end
+
+@implementation Action
+@end
+
+@implementation Person
+
++ (NSString*)modelPropertyNameForJSONkey:(NSString*)jsonKey
+{
+    if ( [jsonKey isEqualToString:@"id"] )
+        return @"identifier";
+    return [super modelPropertyNameForJSONkey:jsonKey];
+}
+
+@end
+
+@interface ModelSubclass : Model
+
+@property (nonatomic,assign) NSInteger integer;
+@property (nonatomic,assign) BOOL boolean;
+@property (nonatomic,assign) BOOL other_boolean;
+@property (nonatomic,strong) NSArray* array;
+@property (nonatomic,strong) NSString* string;
+@property (nonatomic,strong) NSDictionary* dict;
+
+@end
+
+@implementation ModelSubclass
+@end
 
 @interface CoreModelTests : XCTestCase
 
@@ -14,26 +92,40 @@
 
 @implementation CoreModelTests
 
-- (void)setUp {
+- (void)setUp
+{
     [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
+- (void)tearDown
+{
     [super tearDown];
 }
 
-- (void)testExample {
-    // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
+- (void)testModelSubclass
+{
+    NSData* data = [NSData dataWithContentsOfFile: [[NSBundle bundleForClass:[self class]] pathForResource:@"test" ofType:@"json"]];
+    
+    ModelSubclass* m = [[ModelSubclass alloc] initWithData:data error:nil];
+    
+    XCTAssertNotNil(m,@"m is nil");
+    XCTAssertEqual( m.integer, 1, @"integer property is not euqal to 1", nil );
+    XCTAssertEqual( m.boolean, YES, @"boolean property is not euqal to YES", nil );
+    XCTAssertEqual( m.other_boolean, YES, @"integer property is not euqal to 1", nil );
+    XCTAssertEqualObjects( m.string, @"this is a string" );
+    
+    NSArray* a = @[ @(1), @"string" ];
+    XCTAssertEqualObjects( m.array, a );
+    
+    NSDictionary* d = @{ @"key1" : @(1), @"key2" : @"hello", @"key3" : @(YES) };
+    XCTAssertEqualObjects( m.dict, d );
 }
 
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
+- (void)testLevelsOfModels
+{
+    NSData* data = [NSData dataWithContentsOfFile: [[NSBundle bundleForClass:[self class]] pathForResource:@"levels" ofType:@"json"]];
+    NSArray<Item*>* items = [Item modelsFromData:data error:nil];
+    XCTAssertNotNil(items,@"items is nil");
 }
 
 @end
