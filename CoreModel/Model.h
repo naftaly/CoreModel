@@ -22,32 +22,52 @@
 @interface Model : NSObject
 
 /* 
- given JSON, return the JSON key that represents the root object the object needing decoding 
- ie: { "data" : [ { "id" : "12345" }, { "id" : "2345" } ] }
-    the JSON key would be "data"
+ * initializers 
+ */
+- (instancetype)initWithData:(NSData*)data error:(NSError**)error;
++ (NSArray<__kindof Model*>*)modelsFromData:(NSData*)data error:(NSError**)error;
+
+/*
+ *
+ * Overload the following class methods in your subclass to change behavior
+ *
+ */
+
+/* 
+ * given JSON, return the JSON key that represents the root object for the object needing decoding
+ * ie: { "data" : [ { "id" : "12345" }, { "id" : "2345" } ] } => the JSON key would be "data"
  */
 + (NSString*)modelJSONKeyForClassRoot;
 
-/* return the property name for a given json key */
+/* 
+ * return the property name for a given json key 
+ */
 + (NSString*)modelPropertyNameForJSONkey:(NSString*)jsonKey;
 
-/* given a json key that is a Dictionary or an Array, return the class to use */
+/* 
+ * given a json key that is a Dictionary or an Array, return the class to use 
+ */
 + (Class)modelClassForJSONKey:(NSString*)jsonKey;
 
 /* 
- given a JSON object, convert that object to type
- default handles null, string => date, string => url
+ * given a JSON object, convert that object to type
+ * default handles null, string => date, string => url
  */
 + (id)modelConvertJSONObject:(NSObject*)jsonObj toType:(Class)type;
 
-- (instancetype)initWithData:(NSData*)data error:(NSError**)error;
-+ (NSArray<__kindof Model*>*)modelsFromData:(NSData*)data error:(NSError**)error;
+/*
+ * given a JSON object, convert that object to typeEncoding
+ * default handles anthing relating to number and bool ( NSNumber )
+ */
++ (id)modelConvertJSONObject:(NSObject*)jsonObj toTypeEncoding:(char)typeEncoding;
 
 @end
 
 @interface Model (NSURLSessionDataTask)
 
-/* data task for which the completion handler will compute an array of models */
+/* 
+ * data task for which the completion handler will compute an array of models 
+ */
 + (NSURLSessionDataTask*)modelTaskURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof Model*>* models, NSURLResponse* response, NSError* error))completionHandler;
 
 @end
