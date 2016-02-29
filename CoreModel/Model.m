@@ -308,7 +308,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         return nil;
     }
     
-    NSLog( @"<%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), NSStringFromClass(type) );
+    NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), NSStringFromClass(type) );
     return nil;
 }
 
@@ -353,7 +353,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     char c[2] = { typeEncoding, 0 };
     NSString* type = [NSString stringWithUTF8String:c];
     
-    NSLog( @"<%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
+    NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
     return nil;
 }
 
@@ -401,13 +401,19 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         // if the returned key is nil we skip this value completely
         NSString* modelKey = [[self class] modelPropertyNameForJSONkey:inKey];
         if ( !modelKey )
-            return;
+        {
+            NSLog( @"[CoreModel] could not find a model for JSONKey %@", inKey );
+            continue;
+        }
         
         // get the ModelProperty used for this key
         // if we can't find one, then we skip
         ModelProperty* modelProperty = [[self class] modelPropertiesForClass:self.class][modelKey];
         if ( !modelProperty )
-            return;
+        {
+            NSLog( @"[CoreModel] could not find a model for property %@", modelKey );
+            continue;
+        }
         
         id evaluatedObj = nil;
         

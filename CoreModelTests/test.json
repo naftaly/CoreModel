@@ -11,5 +11,6 @@
         "key2" : "hello",
         "key3" : true
     },
-    "string" : "this is a string"
+    "string" : "this is a string",
+    "bla" : "haha"
 }

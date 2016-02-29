@@ -125,7 +125,8 @@
 {
     NSData* data = [NSData dataWithContentsOfFile: [[NSBundle bundleForClass:[self class]] pathForResource:@"levels" ofType:@"json"]];
     NSArray<Item*>* items = [Item modelsFromData:data error:nil];
-    XCTAssertNotNil(items,@"items is nil");
+    XCTAssertNotNil(items);
+    XCTAssertEqual( items.count, 3 );
 }
 
 @end
