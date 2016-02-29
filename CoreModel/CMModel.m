@@ -17,10 +17,10 @@
  *
  */
 
-#import "Model.h"
+#import "CMModel.h"
 #import <objc/runtime.h>
 
-@interface ModelJSONAdapter : NSObject <ModelAdapter>
+@interface ModelJSONAdapter : NSObject <CMModelAdapter>
 @end
 
 @implementation ModelJSONAdapter
@@ -39,7 +39,7 @@
 
 @end
 
-@interface ModelProperty : NSObject
+@interface CMModelProperty : NSObject
 
 @property (nonatomic,strong) NSString* name;
 
@@ -59,7 +59,7 @@
 
 @end
 
-@implementation ModelProperty
+@implementation CMModelProperty
 
 - (NSString*)description
 {
@@ -68,13 +68,13 @@
 
 @end
 
-typedef NSMutableDictionary<NSString*,ModelProperty*>* ModelMap;
+typedef NSMutableDictionary<NSString*,CMModelProperty*>* ModelMap;
 
-@interface Model ()
+@interface CMModel ()
 
 @end
 
-@implementation Model
+@implementation CMModel
 
 static NSMutableDictionary<NSString*,ModelMap>* _mappings = nil;
 static NSMutableSet<NSString*>* _modelClassNames = nil;
@@ -110,7 +110,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     
     modelPropertyMap = [NSMutableDictionary dictionary];
     
-    while (cls && cls != [Model class])
+    while (cls && cls != [CMModel class])
     {
         unsigned int count = 0;
         objc_property_t* properties = class_copyPropertyList(cls,&count);
@@ -119,7 +119,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
             objc_property_t p = properties[i];
             const char* propName = property_getName(p);
             
-            ModelProperty* modelProperty = [[ModelProperty alloc] init];
+            CMModelProperty* modelProperty = [[CMModelProperty alloc] init];
             modelProperty.name = [NSString stringWithUTF8String:propName];
             
             modelPropertyMap[modelProperty.name] = modelProperty;
@@ -246,7 +246,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return [self initWithJSON:[[self class] JSONFromData:data error:error]];
 }
 
-+ (id<ModelAdapter>)modelAdapter
++ (id<CMModelAdapter>)modelAdapter
 {
     return [[ModelJSONAdapter alloc] init];
 }
@@ -256,7 +256,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return [[self modelAdapter] modelAdapterPropertyListFromData:data error:error];
 }
 
-+ (NSArray<__kindof Model*>*)modelsFromJSON:(id)json
++ (NSArray<__kindof CMModel*>*)modelsFromJSON:(id)json
 {
     if ( !json )
         return nil;
@@ -286,7 +286,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return nil;
 }
 
-+ (NSArray<__kindof Model*>*)modelsFromData:(NSData*)data error:(NSError**)error;
++ (NSArray<__kindof CMModel*>*)modelsFromData:(NSData*)data error:(NSError**)error;
 {
     return [self modelsFromJSON:[self JSONFromData:data error:error]];
 }
@@ -300,7 +300,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
 + (NSString*)modelPropertyNameForJSONkey:(NSString*)jsonKey
 {
-    ModelProperty* prop = [self modelPropertiesForClass:self][jsonKey];
+    CMModelProperty* prop = [self modelPropertiesForClass:self][jsonKey];
     return prop.name;
 }
 
@@ -374,7 +374,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return nil;
 }
 
-+ (NSArray*)_loadModelFromArray:(NSArray*)array property:(ModelProperty*)property
++ (NSArray*)_loadModelFromArray:(NSArray*)array property:(CMModelProperty*)property
 {
     Class arrayModelClass = property ? [[self class] modelClassForJSONKey:property.name] : self;
     if ( arrayModelClass )
@@ -400,9 +400,9 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return [array copy];
 }
 
-+ (id)_loadModelFromDictionary:(NSDictionary*)dict property:(ModelProperty*)property
++ (id)_loadModelFromDictionary:(NSDictionary*)dict property:(CMModelProperty*)property
 {
-    Class cls = property ? ( [property.typeClass isSubclassOfClass:[Model class]] ? property.typeClass : nil ) : self;
+    Class cls = property ? ( [property.typeClass isSubclassOfClass:[CMModel class]] ? property.typeClass : nil ) : self;
     if ( cls )
         return [[cls alloc] initWithJSON:dict];
     return [dict copy];
@@ -425,7 +425,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         
         // get the ModelProperty used for this key
         // if we can't find one, then we skip
-        ModelProperty* modelProperty = [[self class] modelPropertiesForClass:self.class][modelKey];
+        CMModelProperty* modelProperty = [[self class] modelPropertiesForClass:self.class][modelKey];
         if ( !modelProperty )
         {
             NSLog( @"[CoreModel] could not find a model for property %@", modelKey );
@@ -464,9 +464,9 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
 @end
 
-@implementation Model (NSURLSessionDataTask)
+@implementation CMModel (NSURLSessionDataTask)
 
-+ (NSURLSessionDataTask*)modelTaskURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof Model*>* models, NSURLResponse* response, NSError* error))completionHandler
++ (NSURLSessionDataTask*)modelTaskURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof CMModel*>* models, NSURLResponse* response, NSError* error))completionHandler
 {
     return [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         

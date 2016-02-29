@@ -19,7 +19,7 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol ModelAdapter <NSObject>
+@protocol CMModelAdapter <NSObject>
 
 @required
 
@@ -30,13 +30,13 @@
 
 @end
 
-@interface Model : NSObject
+@interface CMModel : NSObject
 
 /* 
  * initializers 
  */
 - (instancetype)initWithData:(NSData*)data error:(NSError**)error;
-+ (NSArray<__kindof Model*>*)modelsFromData:(NSData*)data error:(NSError**)error;
++ (NSArray<__kindof CMModel*>*)modelsFromData:(NSData*)data error:(NSError**)error;
 
 /*
  *
@@ -47,7 +47,7 @@
 /*
  * return a custom adapter to use to convert your data to property list objects. default wraps NSJSONSerialization.
  */
-+ (id<ModelAdapter>)modelAdapter;
++ (id<CMModelAdapter>)modelAdapter;
 
 /* 
  * given JSON, return the JSON key that represents the root object for the object needing decoding
@@ -79,12 +79,12 @@
 
 @end
 
-@interface Model (NSURLSessionDataTask)
+@interface CMModel (NSURLSessionDataTask)
 
 /* 
  * data task for which the completion handler will compute an array of models 
  */
-+ (NSURLSessionDataTask*)modelTaskURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof Model*>* models, NSURLResponse* response, NSError* error))completionHandler;
++ (NSURLSessionDataTask*)modelTaskURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof CMModel*>* models, NSURLResponse* response, NSError* error))completionHandler;
 
 @end
 

@@ -9,21 +9,33 @@
 #import <XCTest/XCTest.h>
 #import <CoreModel/CoreModel.h>
 
-@interface Person : Model
+@interface CustomNilAdapter : NSObject <CMModelAdapter>
+@end
+
+@implementation CustomNilAdapter
+
+- (id)modelAdapterPropertyListFromData:(NSData *)data error:(NSError *__autoreleasing *)error
+{
+    return nil;
+}
+
+@end
+
+@interface Person : CMModel
 
 @property (nonatomic,copy) NSString* identifier;
 @property (nonatomic,copy) NSString* name;
 
 @end
 
-@interface Action : Model
+@interface Action : CMModel
 
 @property (nonatomic,copy) NSString* name;
 @property (nonatomic,copy) NSURL* link;
 
 @end
 
-@interface Item : Model
+@interface Item : CMModel
 
 @property (nonatomic,copy) NSString* identifier;
 @property (nonatomic,strong) Person* from;
@@ -32,6 +44,18 @@
 @property (nonatomic,strong) NSString* type;
 @property (nonatomic,strong) NSDate* created_time;
 @property (nonatomic,strong) NSDate* updated_time;
+
+@end
+
+@interface ItemNilAdapter : Item
+@end
+
+@implementation ItemNilAdapter
+
++ (id<CMModelAdapter>)modelAdapter
+{
+    return [[CustomNilAdapter alloc] init];
+}
 
 @end
 
@@ -72,7 +96,7 @@
 
 @end
 
-@interface ModelSubclass : Model
+@interface ModelSubclass : CMModel
 
 @property (nonatomic,assign) NSInteger integer;
 @property (nonatomic,assign) BOOL boolean;
@@ -127,6 +151,13 @@
     NSArray<Item*>* items = [Item modelsFromData:data error:nil];
     XCTAssertNotNil(items);
     XCTAssertEqual( items.count, 3 );
+}
+
+- (void)testNilAdapter
+{
+    NSData* data = [NSData dataWithContentsOfFile: [[NSBundle bundleForClass:[self class]] pathForResource:@"levels" ofType:@"json"]];
+    NSArray<ItemNilAdapter*>* items = [ItemNilAdapter modelsFromData:data error:nil];
+    XCTAssertNil(items);
 }
 
 @end

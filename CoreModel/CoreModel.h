@@ -17,6 +17,6 @@
  *
  */
 
-#import <CoreModel/Model.h>
+#import <CoreModel/CMModel.h>
 
 
