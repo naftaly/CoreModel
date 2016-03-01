@@ -54,7 +54,6 @@
 @property (nonatomic,assign,getter=isNonAtomic) BOOL nonAtomic;
 @property (nonatomic,assign,getter=isDynamic) BOOL dynamic;
 @property (nonatomic,assign,getter=isWeak) BOOL weak;
-@property (nonatomic,assign,getter=isEligibleForGarbageCollection) BOOL eligibleForGarbageCollection;
 
 @property (nonatomic,assign) char typeEncoding;
 @property (nonatomic,assign) Class typeClass;
@@ -184,18 +183,15 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
                     }
                         break;
                         
+                        /* 
+                         commenting since we can't test this
                     case 'P':
                     {
                         modelProperty.eligibleForGarbageCollection = YES;
                     }
                         break;
-                        
-                    case 't':
-                    {
-                        modelProperty.typeEncoding = propAtt[c].value[0];
-                    }
-                        break;
-                        
+                        */
+
                     case 'T':
                     {
                         NSString* s = [NSString stringWithUTF8String:propAtt[c].value];
@@ -487,6 +483,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         {
             if ( completionHandler )
                 completionHandler( nil, response, jsonError );
+            return;
         }
         
         if ( completionHandler )

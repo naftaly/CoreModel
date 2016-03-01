@@ -25,6 +25,35 @@
 #import <XCTest/XCTest.h>
 #import <CoreModel/CoreModel.h>
 
+@interface ModelPropertyTester : CMModel
+
+@property (readonly) BOOL readonlyTestProperty;
+@property (copy) NSString* copiedTestProperty;
+@property (strong) NSString* referencedTestProperty;
+@property (nonatomic) BOOL nonatomicTestProperty;
+@property BOOL dynamicTestProperty;
+@property (weak) NSString* weakTestProperty;
+@property (nonatomic,getter=isCustomGetterProperty) BOOL customGetterProperty;
+@property (nonatomic,setter=inputCustomSetterProperty:) BOOL customSetterProperty;
+
+@end
+
+@implementation ModelPropertyTester
+
+@dynamic nonatomicTestProperty;
+
+- (BOOL)isCustomGetterProperty
+{
+    return _customGetterProperty;
+}
+
+- (void)inputCustomSetterProperty:(BOOL)customSetterProperty
+{
+    _customGetterProperty = customSetterProperty;
+}
+
+@end
+
 @interface CustomNilAdapter : NSObject <CMModelAdapter>
 @end
 
@@ -174,6 +203,71 @@
     NSData* data = [NSData dataWithContentsOfFile: [[NSBundle bundleForClass:[self class]] pathForResource:@"levels" ofType:@"json"]];
     NSArray<ItemNilAdapter*>* items = [ItemNilAdapter modelsFromData:data error:nil];
     XCTAssertNil(items);
+}
+
+- (void)testDescription
+{
+    NSData* data = [NSData dataWithContentsOfFile: [[NSBundle bundleForClass:[self class]] pathForResource:@"test" ofType:@"json"]];
+    ModelSubclass* m = [[ModelSubclass alloc] initWithData:data error:nil];
+    XCTAssertNotNil( m.description );
+}
+
+- (void)testModelPropertyClass
+{
+    ModelPropertyTester* tester = [[ModelPropertyTester alloc] initWithPropertyList:@{ @"readonlyTestProperty" : @(YES) }];
+    XCTAssertNotNil( tester );
+}
+
+- (void)testEmptyPropertyList
+{
+    ModelPropertyTester* tester = [[ModelPropertyTester alloc] initWithPropertyList:@{}];
+    XCTAssertNil( tester );
+}
+
+- (void)testInit
+{
+    ModelPropertyTester* tester = [[ModelPropertyTester alloc] init];
+    XCTAssertNil( tester );
+}
+
+- (void)testModels
+{
+    NSData* data = [NSData dataWithContentsOfFile: [[NSBundle bundleForClass:[self class]] pathForResource:@"test" ofType:@"json"]];
+    
+    NSArray<ModelSubclass*>* models = [ModelSubclass modelsFromData:data error:nil];
+    XCTAssertNotNil(models);
+    XCTAssertEqual(models.count, 1);
+    
+    ModelSubclass* m = models.firstObject;
+    
+    XCTAssertNotNil(m,@"m is nil");
+    XCTAssertEqual( m.integer, 1, @"integer property is not euqal to 1", nil );
+    XCTAssertEqual( m.boolean, YES, @"boolean property is not euqal to YES", nil );
+    XCTAssertEqual( m.other_boolean, YES, @"integer property is not euqal to 1", nil );
+    XCTAssertEqualObjects( m.string, @"this is a string" );
+    
+    NSArray* a = @[ @(1), @"string" ];
+    XCTAssertEqualObjects( m.array, a );
+    
+    NSDictionary* d = @{ @"key1" : @(1), @"key2" : @"hello", @"key3" : @(YES) };
+    XCTAssertEqualObjects( m.dict, d );
+}
+
+- (void)testAsyncDownload
+{
+    XCTestExpectation* expect = [self expectationWithDescription:@"async test"];
+    
+    NSURL* url = [NSURL URLWithString:@"https://www.apple.com"];
+    NSURLRequest* req = [NSURLRequest requestWithURL:url];
+    
+    [[CMModel modelTaskWithURLSession:[NSURLSession sharedSession] request:req completionHandler:^(NSArray<__kindof CMModel *> * _Nullable models, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        
+        [expect fulfill];
+        
+    }] resume];
+    
+    [self waitForExpectationsWithTimeout:10 handler:^(NSError * _Nullable error) {
+    }];
 }
 
 @end
