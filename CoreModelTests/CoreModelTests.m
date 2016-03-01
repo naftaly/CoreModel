@@ -77,23 +77,23 @@
 
 @implementation Item
 
-+ (NSString*)modelJSONKeyForClassRoot
++ (NSString*)modelKeyForClassRoot
 {
     return @"data";
 }
 
-+ (NSString*)modelPropertyNameForJSONkey:(NSString*)jsonKey
++ (NSString*)modelPropertyNameForkey:(NSString*)jsonKey
 {
     if ( [jsonKey isEqualToString:@"id"] )
         return @"identifier";
-    return [super modelPropertyNameForJSONkey:jsonKey];
+    return [super modelPropertyNameForkey:jsonKey];
 }
 
-+ (Class)modelClassForJSONKey:(NSString*)jsonKey
++ (Class)modelClassForKey:(NSString*)jsonKey
 {
     if ( [jsonKey isEqualToString:@"actions"] )
         return [Action class];
-    return [super modelClassForJSONKey:jsonKey];
+    return [super modelClassForKey:jsonKey];
 }
 
 @end
@@ -103,11 +103,11 @@
 
 @implementation Person
 
-+ (NSString*)modelPropertyNameForJSONkey:(NSString*)jsonKey
++ (NSString*)modelPropertyNameForkey:(NSString*)jsonKey
 {
     if ( [jsonKey isEqualToString:@"id"] )
         return @"identifier";
-    return [super modelPropertyNameForJSONkey:jsonKey];
+    return [super modelPropertyNameForkey:jsonKey];
 }
 
 @end

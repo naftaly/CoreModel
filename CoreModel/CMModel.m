@@ -232,23 +232,22 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
 - (instancetype)init
 {
-    self = [super init];
-    [self _loadProperties];
-    return self;
+    return [self initWithPropertyList:@{}];
 }
 
-- (instancetype)initWithJSON:(NSDictionary*)json
+- (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist
 {
-    if ( !json )
+    if ( !plist || plist.count == 0 )
         return nil;
-    self = [self init];
-    [self _loadModelFromJSON:json];
+    self = [super init];
+    [self _loadProperties];
+    [self _loadModelFromJSON:plist];
     return self;
 }
 
 - (instancetype)initWithData:(NSData*)data error:(NSError**)error
 {
-    return [self initWithJSON:[[self class] JSONFromData:data error:error]];
+    return [self initWithPropertyList:[[self class] JSONFromData:data error:error]];
 }
 
 + (id<CMModelAdapter>)modelAdapter
@@ -274,7 +273,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     {
         NSDictionary<NSString*,id>* dict = json;
         
-        NSString* rootKey = [self modelJSONKeyForClassRoot];
+        NSString* rootKey = [self modelKeyForClassRoot];
         if ( rootKey && dict[rootKey] )
         {
             id root = dict[rootKey];
@@ -282,7 +281,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         }
         else
         {
-            id obj = [[[self class] alloc] initWithJSON:json];
+            id obj = [[[self class] alloc] initWithPropertyList:json];
             if ( obj )
                 return @[ obj ];
         }
@@ -296,30 +295,30 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return [self modelsFromJSON:[self JSONFromData:data error:error]];
 }
 
-+ (Class)modelClassForJSONKey:(NSString*)jsonKey
++ (Class)modelClassForKey:(NSString*)jsonKey
 {
     if ( [_modelClassNames containsObject:jsonKey] )
         return NSClassFromString(jsonKey);
     return nil;
 }
 
-+ (NSString*)modelPropertyNameForJSONkey:(NSString*)jsonKey
++ (NSString*)modelPropertyNameForkey:(NSString*)jsonKey
 {
     CMModelProperty* prop = [self modelPropertiesForClass:self][jsonKey];
     return prop.name;
 }
 
-+ (NSString*)modelJSONKeyForClassRoot
++ (NSString*)modelKeyForClassRoot
 {
     return nil;
 }
 
-+ (id)modelConvertJSONObject:(NSObject*)jsonObj toType:(Class)type
++ (id)modelConvertObject:(NSObject*)jsonObj toType:(Class)type
 {
     // need to convert value to type class
     if ( [jsonObj isKindOfClass:[NSString class]] && type == [NSDate class] )
     {
-        return [[self JSONDataFormatter] dateFromString:(NSString*)jsonObj];
+        return [[self JSONDateFormatter] dateFromString:(NSString*)jsonObj];
     }
     else if ( [jsonObj isKindOfClass:[NSString class]] && type == [NSURL class] )
     {
@@ -334,7 +333,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return nil;
 }
 
-+ (NSDateFormatter*)JSONDataFormatter
++ (NSDateFormatter*)JSONDateFormatter
 {
     static NSDateFormatter* _fmt = nil;
     static dispatch_once_t onceToken;
@@ -346,7 +345,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return _fmt;
 }
 
-+ (id)modelConvertJSONObject:(NSObject*)jsonObj toTypeEncoding:(char)typeEncoding
++ (id)modelConvertObject:(NSObject*)jsonObj toTypeEncoding:(char)typeEncoding
 {
     // need to convert value to type class
     switch (typeEncoding)
@@ -381,7 +380,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
 + (NSArray*)_loadModelFromArray:(NSArray*)array property:(CMModelProperty*)property
 {
-    Class arrayModelClass = property ? [[self class] modelClassForJSONKey:property.name] : self;
+    Class arrayModelClass = property ? [[self class] modelClassForKey:property.name] : self;
     if ( arrayModelClass )
     {
         NSMutableArray* results = [NSMutableArray array];
@@ -389,7 +388,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         {
             if ( [it isKindOfClass:[NSDictionary class]] )
             {
-                id item = [[arrayModelClass alloc] initWithJSON:(NSDictionary*)it];
+                id item = [[arrayModelClass alloc] initWithPropertyList:(NSDictionary*)it];
                 if ( item )
                     [results addObject:item];
             }
@@ -409,7 +408,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 {
     Class cls = property ? ( [property.typeClass isSubclassOfClass:[CMModel class]] ? property.typeClass : nil ) : self;
     if ( cls )
-        return [[cls alloc] initWithJSON:dict];
+        return [[cls alloc] initWithPropertyList:dict];
     return [dict copy];
 }
 
@@ -421,10 +420,10 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         
         // get the property key we use for this key
         // if the returned key is nil we skip this value completely
-        NSString* modelKey = [[self class] modelPropertyNameForJSONkey:inKey];
+        NSString* modelKey = [[self class] modelPropertyNameForkey:inKey];
         if ( !modelKey )
         {
-            NSLog( @"[CoreModel] could not find a model for JSONKey %@", inKey );
+            NSLog( @"[CoreModel] could not find a model for key %@", inKey );
             continue;
         }
         
@@ -454,11 +453,11 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         }
         else if ( modelProperty.typeEncoding != 0 )
         {
-            evaluatedObj = [[self class] modelConvertJSONObject:obj toTypeEncoding:modelProperty.typeEncoding];
+            evaluatedObj = [[self class] modelConvertObject:obj toTypeEncoding:modelProperty.typeEncoding];
         }
         else
         {
-            evaluatedObj = [[self class] modelConvertJSONObject:obj toType:modelProperty.typeClass];
+            evaluatedObj = [[self class] modelConvertObject:obj toType:modelProperty.typeClass];
         }
         
         if ( evaluatedObj )
@@ -471,7 +470,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
 @implementation CMModel (NSURLSessionDataTask)
 
-+ (NSURLSessionDataTask*)modelTaskURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof CMModel*>* models, NSURLResponse* response, NSError* error))completionHandler
++ (NSURLSessionDataTask*)modelTaskWithURLSession:(NSURLSession*)session request:(NSURLRequest*)request completionHandler:(void (^)(NSArray<__kindof CMModel*>* models, NSURLResponse* response, NSError* error))completionHandler
 {
     return [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         
