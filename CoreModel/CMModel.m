@@ -256,6 +256,41 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return [[self modelAdapter] modelAdapterPropertyListFromData:data error:error];
 }
 
++ (id)_valueForKeyPath:(NSString*)keyPath inDictionary:(NSDictionary*)dict
+{
+    NSMutableArray* comps = [[keyPath componentsSeparatedByString:@"."] mutableCopy];
+    id              currentObject = dict;
+    while ( comps.count )
+    {
+        NSString* key = comps.firstObject;
+        [comps removeObjectAtIndex:0];
+        
+        static NSRegularExpression* expr = nil;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            expr = [NSRegularExpression regularExpressionWithPattern:@"\[([0-9]+)]" options:0 error:nil];
+        });
+        
+        NSTextCheckingResult* match = [expr firstMatchInString:key options:0 range:NSMakeRange(0, key.length)];
+        if ( match.range.length > 0 )
+        {
+            NSString*   baseKey = [key substringToIndex:match.range.location-1]; // -1 becuase it's the [
+            NSUInteger  index = [[key substringWithRange:match.range] integerValue];
+            
+            currentObject = [currentObject valueForKey:baseKey];
+            if ( [currentObject isKindOfClass:[NSArray class]] )
+            {
+                currentObject = [currentObject objectAtIndex:index];
+            }
+        }
+        else
+            currentObject = [currentObject valueForKey:key];
+        
+    }
+    
+    return currentObject;
+}
+
 + (NSArray<__kindof CMModel*>*)modelsFromJSON:(id)json
 {
     if ( !json )
@@ -269,11 +304,11 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     {
         NSDictionary<NSString*,id>* dict = json;
         
-        NSString* rootKey = [self modelKeyForClassRoot];
-        if ( rootKey && dict[rootKey] )
+        NSString*   rootKey = [self modelKeyForClassRoot];
+        id          rootVal = rootKey ? [self _valueForKeyPath:rootKey inDictionary:dict] : nil;
+        if ( rootVal )
         {
-            id root = dict[rootKey];
-            return [self modelsFromJSON:root];
+            return [self modelsFromJSON:rootVal];
         }
         else
         {
