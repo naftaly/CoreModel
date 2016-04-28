@@ -351,6 +351,10 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     {
         return [[self JSONDateFormatter] dateFromString:(NSString*)jsonObj];
     }
+    else if ( [jsonObj isKindOfClass:[NSNumber class]] && type == [NSDate class] )
+    {
+        return [NSDate dateWithTimeIntervalSince1970:[(NSNumber*)jsonObj doubleValue]];
+    }
     else if ( [jsonObj isKindOfClass:[NSString class]] && type == [NSURL class] )
     {
         return [NSURL URLWithString:(NSString*)jsonObj];
