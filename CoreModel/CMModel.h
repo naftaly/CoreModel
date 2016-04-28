@@ -94,6 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface CMModel : NSObject
 
+- (NSDictionary*)jsonDictionary;
+
 /**
  Initializes an instance of `CMModel` from the specified property list.
  
@@ -125,6 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
  @return An array of CMModel or nil if an error occured processing the data.
  */
 + (NSArray<__kindof CMModel*>* _Nullable)modelsFromData:(NSData*)data error:(NSError* _Nullable * _Nullable)error;
++ (NSArray<__kindof CMModel*>*)modelsFromPropertyList:(id)plist error:(NSError* _Nullable * _Nullable)error;
 
 /**
  Returns an object that implements `CMModelAdapter`. This object will be used to parse the data for this class. 

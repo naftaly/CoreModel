@@ -83,6 +83,18 @@ typedef NSMutableDictionary<NSString*,CMModelProperty*>* ModelMap;
 static NSMutableDictionary<NSString*,ModelMap>* _mappings = nil;
 static NSMutableSet<NSString*>* _modelClassNames = nil;
 
+- (NSString*)description
+{
+    NSDictionary* dict = self.jsonDictionary;
+    NSData* data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
+- (id)debugQuickLookObject
+{
+    return [self description];
+}
+
 + (void)load
 {
     static dispatch_once_t onceToken;
@@ -226,6 +238,56 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     [[self class] setModelProperties:modelPropertyMap forClass:[self class]];
 }
 
+- (id)_jsonForValue:(id)value
+{
+    if ( !value )
+        return [NSNull null];
+    
+    static NSArray* jsonValueClasses = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        jsonValueClasses = @[ [NSString class],
+                              [NSNumber class],
+                              [NSArray class],
+                              [NSDictionary class],
+                              [NSNull class] ];
+    });
+    
+    for ( Class cls in jsonValueClasses )
+    {
+        if ( [value isKindOfClass:cls] )
+            return value;
+    }
+    
+    if ( [value respondsToSelector:@selector(stringValue)] )
+        return [value stringValue];
+    
+    return [value description];
+}
+
+- (NSDictionary*)jsonDictionary
+{
+    NSMutableDictionary* json = [NSMutableDictionary dictionary];
+    
+    Class cls = self.class;
+    
+    unsigned int count = 0;
+    objc_property_t* properties = class_copyPropertyList(cls,&count);
+    for ( unsigned int i = 0; i < count; i++ )
+    {
+        objc_property_t p = properties[i];
+        const char* propName = property_getName(p);
+        NSString* key = [NSString stringWithUTF8String:propName];
+        id value = [self valueForKey:key];
+        json[key] = [self _jsonForValue:value];
+    }
+    free( properties );
+    
+    cls = class_getSuperclass(cls);
+    
+    return [json copy];
+}
+
 - (instancetype)init
 {
     return [self initWithPropertyList:@{}];
@@ -233,7 +295,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
 - (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist
 {
-    if ( !plist || plist.count == 0 )
+    if ( !plist )
         return nil;
     self = [super init];
     [self _loadProperties];
@@ -300,8 +362,11 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     {
         return [self _loadModelFromArray:json property:nil];
     }
-    else if ( [json isKindOfClass:[NSDictionary class]] )
+    else if ( [json isKindOfClass:[NSDictionary class]] || [json isKindOfClass:NSClassFromString(@"PFObject")] )
     {
+        if ( [json isKindOfClass:NSClassFromString(@"PFObject")] )
+            json = [self modelConvertObject:json toType:[NSDictionary class]];
+
         NSDictionary<NSString*,id>* dict = json;
         
         NSString*   rootKey = [self modelKeyForClassRoot];
@@ -324,6 +389,11 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 + (NSArray<__kindof CMModel*>*)modelsFromData:(NSData*)data error:(NSError**)error;
 {
     return [self modelsFromJSON:[self JSONFromData:data error:error]];
+}
+
++ (NSArray<__kindof CMModel*>*)modelsFromPropertyList:(id)plist error:(NSError**)error;
+{
+    return [self modelsFromJSON:plist];
 }
 
 + (Class)modelClassForKey:(NSString*)jsonKey
@@ -349,7 +419,15 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     // need to convert value to type class
     if ( [jsonObj isKindOfClass:[NSString class]] && type == [NSDate class] )
     {
-        return [[self JSONDateFormatter] dateFromString:(NSString*)jsonObj];
+        id ret = [[self JSONDateFormatter] dateFromString:(NSString*)jsonObj];
+        if ( ret )
+            return ret;
+        return [[self JSONDateFormatter2] dateFromString:(NSString*)jsonObj];
+    }
+    else if ( [jsonObj isKindOfClass:[NSNumber class]] && type == [NSDate class] )
+    {
+        NSDate* date = [NSDate dateWithTimeIntervalSince1970: ((NSNumber*)jsonObj).doubleValue];
+        return date;
     }
     else if ( [jsonObj isKindOfClass:[NSString class]] && type == [NSURL class] )
     {
@@ -364,13 +442,25 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return nil;
 }
 
++ (NSDateFormatter*)JSONDateFormatter2
+{
+    static NSDateFormatter* _fmt = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _fmt = [[NSDateFormatter alloc] init];
+        //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [_fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"];
+    });
+    return _fmt;
+}
+
 + (NSDateFormatter*)JSONDateFormatter
 {
     static NSDateFormatter* _fmt = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _fmt = [[NSDateFormatter alloc] init];
-        [_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         [_fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZ"];
     });
     return _fmt;
@@ -415,8 +505,12 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     if ( arrayModelClass )
     {
         NSMutableArray* results = [NSMutableArray array];
-        for ( NSObject* it in array )
+        for ( NSObject* inIt in array )
         {
+            NSObject* it = inIt;
+            if ( [it isKindOfClass:NSClassFromString(@"PFObject")] )
+                it = [self modelConvertObject:it toType:[NSDictionary class]];
+            
             if ( [it isKindOfClass:[NSDictionary class]] )
             {
                 id item = [[arrayModelClass alloc] initWithPropertyList:(NSDictionary*)it];
@@ -457,7 +551,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
             NSLog( @"[CoreModel] could not find a model for key %@", inKey );
             continue;
         }
-        
+
         // get the ModelProperty used for this key
         // if we can't find one, then we skip
         CMModelProperty* modelProperty = [[self class] modelPropertiesForClass:self.class][modelKey];
@@ -466,7 +560,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
             NSLog( @"[CoreModel] could not find a model for property %@", modelKey );
             continue;
         }
-        
+
         id evaluatedObj = nil;
         
         // check the kind of the value and  evaluate it
@@ -476,6 +570,11 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         }
         else if ( [obj isKindOfClass:[NSDictionary class]] )
         {
+            evaluatedObj = [[self class] _loadModelFromDictionary:obj property:modelProperty];
+        }
+        else if ( [obj isKindOfClass:NSClassFromString(@"PFObject")] )
+        {
+            obj = [[self class] modelConvertObject:obj toType:[NSDictionary class]];
             evaluatedObj = [[self class] _loadModelFromDictionary:obj property:modelProperty];
         }
         else if ( modelProperty.typeClass && [obj isKindOfClass:modelProperty.typeClass] )
@@ -492,7 +591,12 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         }
         
         if ( evaluatedObj )
+        {
+            if ( [evaluatedObj isKindOfClass:[NSString class]] && ((NSString*)evaluatedObj).length == 0 )
+                evaluatedObj = nil;
+            
             [self setValue:evaluatedObj forKey:modelProperty.name];
+        }
     }
     
 }
