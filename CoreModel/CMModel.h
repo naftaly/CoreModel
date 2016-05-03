@@ -92,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
  You now have a fully initialized instance of person filled in with your data.
  
  */
-@interface CMModel : NSObject
+NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
 
 - (NSDictionary*)jsonDictionary;
 
