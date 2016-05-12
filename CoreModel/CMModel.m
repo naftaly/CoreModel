@@ -283,7 +283,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     }
     free( properties );
     
-    cls = class_getSuperclass(cls);
+    //cls = class_getSuperclass(cls);
     
     return [json copy];
 }
