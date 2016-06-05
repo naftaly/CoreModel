@@ -238,26 +238,62 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     [[self class] setModelProperties:modelPropertyMap forClass:[self class]];
 }
 
+- (id)_jsonForContainerValue:(id)value
+{
+    if ( [value isKindOfClass:[NSArray class]] )
+    {
+        NSMutableArray* array = [NSMutableArray array];
+        for ( id obj in (NSArray*)value )
+            [array addObject:[self _jsonForValue:obj]];
+        return array;
+    }
+    else if ( [value isKindOfClass:[NSDictionary class]] )
+    {
+        NSMutableDictionary* dict = [NSMutableDictionary dictionary];
+        [(NSDictionary*)value enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            id k = [self _jsonForValue:key];
+            id v = [self _jsonForValue:obj];
+            dict[k] = v;
+        }];
+        return [dict copy];
+    }
+    
+    return nil;
+}
+
 - (id)_jsonForValue:(id)value
 {
     if ( !value )
         return [NSNull null];
     
     static NSArray* jsonValueClasses = nil;
+    static NSArray* jsonValueContainerClasses = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        
         jsonValueClasses = @[ [NSString class],
                               [NSNumber class],
-                              [NSArray class],
-                              [NSDictionary class],
                               [NSNull class] ];
+        
+        jsonValueContainerClasses = @[ [NSArray class],
+                                       [NSDictionary class] ];
+        
     });
+    
+    for ( Class cls in jsonValueContainerClasses )
+    {
+        if ( [value isKindOfClass:cls] )
+            return [self _jsonForContainerValue:value];
+    }
     
     for ( Class cls in jsonValueClasses )
     {
         if ( [value isKindOfClass:cls] )
             return value;
     }
+    
+    if ( [value isKindOfClass:[CMModel class]] )
+        return [((CMModel*)value) jsonDictionary];
     
     if ( [value respondsToSelector:@selector(stringValue)] )
         return [value stringValue];
@@ -440,6 +476,10 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     else if ( [jsonObj isKindOfClass:[NSNull class]] )
     {
         return nil;
+    }
+    else if ( [jsonObj isKindOfClass:[NSNumber class]] && type == [NSString class] )
+    {
+        return [((NSNumber*)jsonObj) stringValue];
     }
     
     NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), NSStringFromClass(type) );
