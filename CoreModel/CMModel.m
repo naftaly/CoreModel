@@ -389,10 +389,78 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
     return currentObject;
 }
 
-+ (NSArray<__kindof CMModel*>*)modelsFromJSON:(id)json
++ (BOOL)scanString:(NSString*)string forPrefix:(NSString**)outPrefix index:(NSInteger*)outIndex
 {
-    if ( !json )
+    NSString*       prefix = nil;
+    NSInteger       index = 0;
+    NSCharacterSet* numbersSet = [NSCharacterSet characterSetWithCharactersInString:@"1234567890"];
+    NSScanner*      scanner = [NSScanner scannerWithString:string];
+    
+    // find the prefix and number
+    if ( ![scanner scanUpToCharactersFromSet:numbersSet intoString:&prefix] )
+        return NO;
+    
+    if ( ![scanner scanInteger:&index] )
+        return NO;
+    
+    if ( ![scanner isAtEnd] )
+        return NO;
+    
+    if ( outPrefix )
+        *outPrefix = [prefix copy];
+    if ( outIndex )
+        *outIndex = index;
+    
+    return YES;
+}
+
++ (NSArray*)_convertDictionaryToArrayIfPossible:(NSDictionary*)obj
+{
+    if ( !obj || obj.count == 0 || ![obj.allKeys.firstObject isKindOfClass:[NSString class]] )
         return nil;
+    
+    NSMutableArray*     results = [NSMutableArray array];
+    NSString*           foundPrefix = nil;
+    
+    NSMutableArray*     originalObjects = [NSMutableArray array];
+    NSMutableArray*     originalIndexes = [NSMutableArray array];
+    
+    for ( id key in obj )
+    {
+        if ( ![key isKindOfClass:[NSString class]] )
+            return nil;
+        
+        NSString*   prefix = nil;
+        NSInteger   index = 0;
+        if ( ![self scanString:key forPrefix:&prefix index:&index] )
+            return nil;
+        
+        if ( !foundPrefix )
+            foundPrefix = [prefix copy];
+        else if ( ![foundPrefix isEqualToString:prefix] )
+            return nil;
+        
+        [originalObjects addObject:obj[key]];
+        [originalIndexes addObject:@(index)];
+        [results addObject:[NSNull null]];
+    }
+
+    [originalIndexes enumerateObjectsUsingBlock:^(NSNumber*  _Nonnull num, NSUInteger idx, BOOL * _Nonnull stop) {
+        results[ [num integerValue] ] = originalObjects[idx];
+    }];
+    
+    return [results copy];
+}
+
++ (NSArray<__kindof CMModel*>*)modelsFromJSON:(id)inJson
+{
+    if ( !inJson )
+        return nil;
+    
+    id          json = inJson;
+    NSArray*    convertedDict = [json isKindOfClass:[NSDictionary class]] ? [self _convertDictionaryToArrayIfPossible:json] : nil;
+    if ( convertedDict )
+        json = convertedDict;
     
     if ( [json isKindOfClass:[NSArray class]] )
     {
@@ -526,6 +594,7 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
         case _C_FLT:
         case _C_DBL:
         case _C_BFLD:
+        case _C_CHR:
         case _C_BOOL:
         {
             if ( [jsonObj isKindOfClass:[NSNumber class]] )
@@ -607,6 +676,10 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
         id evaluatedObj = nil;
         
+        NSArray*    convertedDict = [obj isKindOfClass:[NSDictionary class]] ? [[self class] _convertDictionaryToArrayIfPossible:obj] : nil;
+        if ( convertedDict )
+            obj = convertedDict;
+
         // check the kind of the value and  evaluate it
         if ( [obj isKindOfClass:[NSArray class]] )
         {
