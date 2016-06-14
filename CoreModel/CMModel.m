@@ -634,7 +634,15 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
             {
             }
             else
+            {
+                id item = [self modelConvertObject:it toType:arrayModelClass];
+                if ( item )
+                    [results addObject:item];
+            }
+            /*
+            else
                 NSLog( @"[CoreModel] found %@ when expecting NSDictionary", NSStringFromClass(it.class) );
+            */
         }
         return [results copy];
     }
