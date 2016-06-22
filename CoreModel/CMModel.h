@@ -106,7 +106,8 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
  
  @return An array of CMModel or nil if an error occured processing the data.
  */
-- (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist;
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 /**
  Initializes an instance of `CMModel` from the specified data.
@@ -135,6 +136,18 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
  By default, this returns an instance that can adapt to JSON data.
  */
 + (id<CMModelAdapter>)modelAdapter;
+
+
+/**
+ If your root is a dictionary, we can just use dict.allValues as a base
+ */
++ (BOOL)convertsRootDictionaryToArray;
+
+/**
+ do whatever you want with an object that has been processed 
+ return a different object to change it
+ */
++ (id _Nullable)postProcessObject:(id)object forKey:(NSString*)key instance:(id)instance;
 
 /**
  Return an `NSString` that represents the path in your model to the important data in order to help the adapter parse into objects.
