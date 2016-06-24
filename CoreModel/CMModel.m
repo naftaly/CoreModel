@@ -86,6 +86,7 @@ typedef NSMutableDictionary<NSString*,CMModelProperty*>* ModelMap;
 
 static NSMutableDictionary<NSString*,ModelMap>* _mappings = nil;
 static NSMutableSet<NSString*>* _modelClassNames = nil;
+static NSRecursiveLock* _lock = nil;
 
 - (NSString*)description
 {
@@ -103,21 +104,31 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        _lock = [[NSRecursiveLock alloc] init];
+        _lock.name = @"com.bedroomcode.coremodel.lock";
         _mappings = [NSMutableDictionary dictionary];
         _modelClassNames = [NSMutableSet set];
     });
     
+    [_lock lock];
     [_modelClassNames addObject: NSStringFromClass(self.class)];
+    [_lock unlock];;
 }
 
 + (void)setModelProperties:(ModelMap)mp forClass:(Class)cls
 {
+    [_lock lock];
     _mappings[NSStringFromClass(cls)] = mp;
+    [_lock unlock];
 }
 
 + (ModelMap)modelPropertiesForClass:(Class)cls
 {
-    return _mappings[NSStringFromClass(cls)];
+    ModelMap map = nil;
+    [_lock lock];
+    map = _mappings[NSStringFromClass(cls)];
+    [_lock unlock];
+    return map;
 }
 
 - (void)_loadProperties
@@ -533,9 +544,12 @@ static NSMutableSet<NSString*>* _modelClassNames = nil;
 
 + (Class)modelClassForKey:(NSString*)jsonKey
 {
+    Class cls = nil;
+    [_lock lock];
     if ( [_modelClassNames containsObject:jsonKey] )
-        return NSClassFromString(jsonKey);
-    return nil;
+        cls = NSClassFromString(jsonKey);
+    [_lock unlock];
+    return cls;
 }
 
 + (NSString*)modelPropertyNameForkey:(NSString*)jsonKey
