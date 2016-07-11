@@ -577,6 +577,10 @@ static NSRecursiveLock* _lock = nil;
         ret = [[self JSONDateFormatter3] dateFromString:(NSString*)jsonObj];
         if ( ret )
             return ret;
+        
+        NSTimeInterval time = [(NSString*)jsonObj doubleValue];
+        return [NSDate dateWithTimeIntervalSince1970:time];
+        
     }
     else if ( [jsonObj isKindOfClass:[NSNumber class]] && type == [NSDate class] )
     {
