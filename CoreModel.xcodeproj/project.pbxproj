@@ -14,6 +14,9 @@
 		FA1E24141C84BFA50045D6EF /* CMModel.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E24121C84BFA50045D6EF /* CMModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FA1E24161C84C6D10045D6EF /* test.json in Resources */ = {isa = PBXBuildFile; fileRef = FA1E24151C84C6D10045D6EF /* test.json */; };
 		FA1E24181C84DD090045D6EF /* levels.json in Resources */ = {isa = PBXBuildFile; fileRef = FA1E24171C84DD090045D6EF /* levels.json */; };
+		FA5FC8231D358C7100F1FF89 /* CMModel.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E24121C84BFA50045D6EF /* CMModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FA5FC8241D358C7800F1FF89 /* CoreModel.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E23FA1C84BF9B0045D6EF /* CoreModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FA5FC8251D358C8300F1FF89 /* CMModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E24111C84BFA50045D6EF /* CMModel.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +40,7 @@
 		FA1E24121C84BFA50045D6EF /* CMModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMModel.h; sourceTree = "<group>"; };
 		FA1E24151C84C6D10045D6EF /* test.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = test.json; sourceTree = "<group>"; };
 		FA1E24171C84DD090045D6EF /* levels.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = levels.json; sourceTree = "<group>"; };
+		FA5FC81B1D358C0200F1FF89 /* CoreModel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CoreModel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +56,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA1E24021C84BF9B0045D6EF /* CoreModel.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA5FC8171D358C0200F1FF89 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,6 +83,7 @@
 			children = (
 				FA1E23F71C84BF9B0045D6EF /* CoreModel.framework */,
 				FA1E24011C84BF9B0045D6EF /* CoreModelTests.xctest */,
+				FA5FC81B1D358C0200F1FF89 /* CoreModel.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -107,6 +119,15 @@
 			files = (
 				FA1E24141C84BFA50045D6EF /* CMModel.h in Headers */,
 				FA1E23FB1C84BF9B0045D6EF /* CoreModel.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA5FC8181D358C0200F1FF89 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA5FC8231D358C7100F1FF89 /* CMModel.h in Headers */,
+				FA5FC8241D358C7800F1FF89 /* CoreModel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +170,24 @@
 			productReference = FA1E24011C84BF9B0045D6EF /* CoreModelTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		FA5FC81A1D358C0200F1FF89 /* CoreModel Mac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FA5FC8221D358C0300F1FF89 /* Build configuration list for PBXNativeTarget "CoreModel Mac" */;
+			buildPhases = (
+				FA5FC8161D358C0200F1FF89 /* Sources */,
+				FA5FC8171D358C0200F1FF89 /* Frameworks */,
+				FA5FC8181D358C0200F1FF89 /* Headers */,
+				FA5FC8191D358C0200F1FF89 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "CoreModel Mac";
+			productName = "CoreModel Mac";
+			productReference = FA5FC81B1D358C0200F1FF89 /* CoreModel.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -163,6 +202,9 @@
 					};
 					FA1E24001C84BF9B0045D6EF = {
 						CreatedOnToolsVersion = 7.2.1;
+					};
+					FA5FC81A1D358C0200F1FF89 = {
+						CreatedOnToolsVersion = 7.3.1;
 					};
 				};
 			};
@@ -179,6 +221,7 @@
 			projectRoot = "";
 			targets = (
 				FA1E23F61C84BF9B0045D6EF /* CoreModel */,
+				FA5FC81A1D358C0200F1FF89 /* CoreModel Mac */,
 				FA1E24001C84BF9B0045D6EF /* CoreModelTests */,
 			);
 		};
@@ -201,6 +244,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FA5FC8191D358C0200F1FF89 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -217,6 +267,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA1E24071C84BF9B0045D6EF /* CoreModelTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA5FC8161D358C0200F1FF89 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA5FC8251D358C8300F1FF89 /* CMModel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,6 +443,52 @@
 			};
 			name = Release;
 		};
+		FA5FC8201D358C0300F1FF89 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "CoreModel/Info-Mac.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xrite.CoreModel;
+				PRODUCT_NAME = CoreModel;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		FA5FC8211D358C0300F1FF89 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "CoreModel/Info-Mac.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xrite.CoreModel;
+				PRODUCT_NAME = CoreModel;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -414,6 +518,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		FA5FC8221D358C0300F1FF89 /* Build configuration list for PBXNativeTarget "CoreModel Mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA5FC8201D358C0300F1FF89 /* Debug */,
+				FA5FC8211D358C0300F1FF89 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};

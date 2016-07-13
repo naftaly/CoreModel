@@ -24,7 +24,12 @@
 
 #import "CMModel.h"
 #import <objc/runtime.h>
+
+#if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#else
+#import <Cocoa/Cocoa.h>
+#endif
 
 @interface ModelJSONAdapter : NSObject <CMModelAdapter>
 @end
@@ -310,12 +315,21 @@ static NSRecursiveLock* _lock = nil;
     if ( [value isKindOfClass:[CMModel class]] )
         return [((CMModel*)value) jsonDictionary];
     
+#if TARGET_OS_IOS
     if ( [value isKindOfClass:[UIColor class]] )
     {
         CGFloat r,g,b;
         if ( [(UIColor*)value getRed:&r green:&g blue:&b alpha:NULL] )
             return @[ @(r*255), @(g*255), @(b*255) ];
     }
+#else
+    if ( [value isKindOfClass:[NSColor class]] )
+    {
+        CGFloat r,g,b;
+        [(NSColor*)value getRed:&r green:&g blue:&b alpha:NULL];
+        return @[ @(r*255), @(g*255), @(b*255) ];
+    }
+#endif
     
     if ( [value isKindOfClass:[NSDate class]] )
         return @( ((NSDate*)value).timeIntervalSince1970 );
@@ -606,7 +620,9 @@ static NSRecursiveLock* _lock = nil;
         return [((NSNumber*)jsonObj) stringValue];
     }
     
+#if DEBUG
     NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), NSStringFromClass(type) );
+#endif
     return nil;
 }
 
@@ -676,7 +692,10 @@ static NSRecursiveLock* _lock = nil;
     char c[2] = { typeEncoding, 0 };
     NSString* type = [NSString stringWithUTF8String:c];
     
+#if DEBUG
     NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
+#endif
+    
     return nil;
 }
 
@@ -739,7 +758,9 @@ static NSRecursiveLock* _lock = nil;
         {
             //id val = [[self class] objectForUnhandledModelKey:inKey object:obj];
             //if ( !val )
+#if DEBUG
             NSLog( @"[CoreModel] could not find a model for key %@", inKey );
+#endif
             continue;
         }
 
@@ -748,7 +769,9 @@ static NSRecursiveLock* _lock = nil;
         CMModelProperty* modelProperty = [[self class] modelPropertiesForClass:self.class][modelKey];
         if ( !modelProperty )
         {
+#if DEBUG
             NSLog( @"[CoreModel] could not find a model for property %@", modelKey );
+#endif
             continue;
         }
 
