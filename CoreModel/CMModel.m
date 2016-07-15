@@ -689,10 +689,9 @@ static NSRecursiveLock* _lock = nil;
             break;
     }
     
+#if DEBUG
     char c[2] = { typeEncoding, 0 };
     NSString* type = [NSString stringWithUTF8String:c];
-    
-#if DEBUG
     NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
 #endif
     
