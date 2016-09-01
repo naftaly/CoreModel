@@ -620,7 +620,7 @@ static NSRecursiveLock* _lock = nil;
         return [((NSNumber*)jsonObj) stringValue];
     }
     
-#if DEBUG
+#if 0
     NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), NSStringFromClass(type) );
 #endif
     return nil;
@@ -689,7 +689,7 @@ static NSRecursiveLock* _lock = nil;
             break;
     }
     
-#if DEBUG
+#if 0
     char c[2] = { typeEncoding, 0 };
     NSString* type = [NSString stringWithUTF8String:c];
     NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
@@ -757,7 +757,7 @@ static NSRecursiveLock* _lock = nil;
         {
             //id val = [[self class] objectForUnhandledModelKey:inKey object:obj];
             //if ( !val )
-#if DEBUG
+#if 0
             NSLog( @"[CoreModel] could not find a model for key %@", inKey );
 #endif
             continue;
@@ -768,7 +768,7 @@ static NSRecursiveLock* _lock = nil;
         CMModelProperty* modelProperty = [[self class] modelPropertiesForClass:self.class][modelKey];
         if ( !modelProperty )
         {
-#if DEBUG
+#if 0
             NSLog( @"[CoreModel] could not find a model for property %@", modelKey );
 #endif
             continue;
