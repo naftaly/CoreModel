@@ -101,9 +101,8 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
  
  This is the designated initializer.
  
- @param data The property list you wish to represent in your model.
- @param On output, an error if an error occured during the processing of the data.
- 
+ @param plist The property list you wish to represent in your model.
+
  @return An array of CMModel or nil if an error occured processing the data.
  */
 - (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist;
@@ -113,7 +112,7 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
  Initializes an instance of `CMModel` from the specified data.
  
  @param data The data you wish to represent in your model.
- @param On output, an error if an error occured during the processing of the data.
+ @param error On output, an error if an error occured during the processing of the data.
  
  @return An array of CMModel or nil if an error occured processing the data.
  */
@@ -123,7 +122,7 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
  Creates an array of `CMModel` from the specified data.
  
  @param data The data you wish to represent in your model.
- @param On output, an error if an error occured during the processing of the data.
+ @param error On output, an error if an error occured during the processing of the data.
  
  @return An array of CMModel or nil if an error occured processing the data.
  */
@@ -189,7 +188,7 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
  By default, anything relating to number and bool is handled ( NSNumber ).
  
  @param obj The object in your data.
- @param type The destination ObjC class for the conversion.
+ @param typeEncoding The destination ObjC class for the conversion.
  
  @return The converted object or nil.
  
