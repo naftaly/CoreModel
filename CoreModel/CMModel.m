@@ -776,9 +776,18 @@ static NSRecursiveLock* _lock = nil;
 
         id evaluatedObj = nil;
         
-        NSArray*    convertedDict = [obj isKindOfClass:[NSDictionary class]] ? [[self class] _convertDictionaryToArrayIfPossible:obj] : nil;
-        if ( convertedDict )
-            obj = convertedDict;
+        NSArray*    convertedDict = nil;
+        if ( [obj isKindOfClass:[NSDictionary class]] )
+        {
+            if ( modelProperty.typeClass == [NSArray class] )
+                convertedDict = ((NSDictionary*)obj).allValues;
+
+            if ( !convertedDict )
+                convertedDict = [[self class] _convertDictionaryToArrayIfPossible:obj];
+
+            if ( convertedDict )
+                obj = convertedDict;
+        }
 
         // check the kind of the value and  evaluate it
         if ( [obj isKindOfClass:[NSArray class]] )
