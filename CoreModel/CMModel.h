@@ -95,6 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
 
 - (NSDictionary*)jsonDictionary;
+- (id)originalValue;
 
 /**
  Initializes an instance of `CMModel` from the specified property list.
@@ -162,11 +163,17 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
 + (NSString* _Nullable)modelPropertyNameForkey:(NSString*)key;
 
 /**
+ Return YES to bypass this object. default is NO.
+ */
++ (BOOL)shouldBypassObject:(id)obj forKey:(NSString*)key;
+
+/**
  Returns a `Class` that maps an ObjC class to a key in your data.
  
  For example, if in your data you have an array in which each object is of type "Buddy", return [Buddy class].
  */
 + (Class _Nullable)modelClassForKey:(NSString*)key;
++ (Class _Nullable)modelClassForKey:(NSString*)jsonKey object:(NSDictionary*)object;
 
 /**
  Returns a converted object in the requested data type.
@@ -195,6 +202,8 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
  @see objc/runtime.h
  */
 + (id _Nullable)modelConvertObject:(NSObject*)obj toTypeEncoding:(char)typeEncoding;
+
++ (BOOL)logWhenDataIsMissing;
 
 @end
 

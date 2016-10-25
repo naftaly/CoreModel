@@ -83,7 +83,9 @@
 
 typedef NSMutableDictionary<NSString*,CMModelProperty*>* ModelMap;
 
-@interface CMModel ()
+@interface CMModel () {
+    id _originalValue;
+}
 
 @end
 
@@ -345,6 +347,11 @@ static NSRecursiveLock* _lock = nil;
     return NO;
 }
 
+- (id)originalValue
+{
+    return _originalValue;
+}
+
 - (NSDictionary*)jsonDictionary
 {
     NSMutableDictionary* json = [NSMutableDictionary dictionary];
@@ -382,6 +389,7 @@ static NSRecursiveLock* _lock = nil;
     if ( !plist )
         return nil;
     self = [self init];
+    _originalValue = [plist copy];
     [self _loadModelFromJSON:plist];
     return self;
 }
@@ -566,6 +574,16 @@ static NSRecursiveLock* _lock = nil;
     return cls;
 }
 
++ (Class)modelClassForKey:(NSString*)jsonKey object:(NSDictionary*)object
+{
+    return nil;
+}
+
++ (BOOL)shouldBypassObject:(id)obj forKey:(NSString*)key
+{
+    return NO;
+}
+
 + (NSString*)modelPropertyNameForkey:(NSString*)jsonKey
 {
     CMModelProperty* prop = [self modelPropertiesForClass:self][jsonKey];
@@ -619,10 +637,17 @@ static NSRecursiveLock* _lock = nil;
     {
         return [((NSNumber*)jsonObj) stringValue];
     }
+    else if ( type == [NSDecimalNumber class] )
+    {
+        if ( [jsonObj isKindOfClass:[NSNumber class]] )
+            return [NSDecimalNumber decimalNumberWithDecimal:[(NSNumber*)jsonObj decimalValue]];
+        else if ( [jsonObj isKindOfClass:[NSString class]] )
+            return [NSDecimalNumber decimalNumberWithString:(NSString*)jsonObj];
+    }
     
-#if 0
-    NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), NSStringFromClass(type) );
-#endif
+    if ( [self.class logWhenDataIsMissing] )
+        NSLog( @"[CoreModel-%@] have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), NSStringFromClass(type) );
+
     return nil;
 }
 
@@ -689,17 +714,21 @@ static NSRecursiveLock* _lock = nil;
             break;
     }
     
-#if 0
-    char c[2] = { typeEncoding, 0 };
-    NSString* type = [NSString stringWithUTF8String:c];
-    NSLog( @"[CoreModel] <%@> have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
-#endif
+    if ( [self.class logWhenDataIsMissing] )
+    {
+        char c[2] = { typeEncoding, 0 };
+        NSString* type = [NSString stringWithUTF8String:c];
+        NSLog( @"[CoreModel-%@] have %@ but want %@", NSStringFromClass(self), NSStringFromClass(((NSObject*)jsonObj).class), type );
+    }
     
     return nil;
 }
 
 + (NSArray*)_loadModelFromArray:(NSArray*)array property:(CMModelProperty*)property
 {
+    if ( [self shouldBypassObject:array forKey:property.name] )
+        return nil;
+    
     Class arrayModelClass = property ? [[self class] modelClassForKey:property.name] : self;
     if ( arrayModelClass )
     {
@@ -712,7 +741,8 @@ static NSRecursiveLock* _lock = nil;
             
             if ( [it isKindOfClass:[NSDictionary class]] )
             {
-                id item = [[arrayModelClass alloc] initWithPropertyList:(NSDictionary*)it];
+                Class cls = [self.class modelClassForKey:property.name object:(NSDictionary*)it];
+                id item = [[ cls ? cls : arrayModelClass alloc] initWithPropertyList:(NSDictionary*)it];
                 if ( item )
                     [results addObject:item];
             }
@@ -725,10 +755,7 @@ static NSRecursiveLock* _lock = nil;
                 if ( item )
                     [results addObject:item];
             }
-            /*
-            else
-                NSLog( @"[CoreModel] found %@ when expecting NSDictionary", NSStringFromClass(it.class) );
-            */
+            
         }
         return [results copy];
     }
@@ -738,6 +765,9 @@ static NSRecursiveLock* _lock = nil;
 
 + (id)_loadModelFromDictionary:(NSDictionary*)dict property:(CMModelProperty*)property
 {
+    if ( [self shouldBypassObject:dict forKey:property.name] )
+        return nil;
+    
     Class cls = property ? ( [property.typeClass isSubclassOfClass:[CMModel class]] ? property.typeClass : nil ) : self;
     if ( cls )
         return [[cls alloc] initWithPropertyList:dict];
@@ -750,6 +780,9 @@ static NSRecursiveLock* _lock = nil;
     {
         id obj = json[inKey];
         
+        if ( [self.class shouldBypassObject:obj forKey:inKey] )
+            continue;
+        
         // get the property key we use for this key
         // if the returned key is nil we skip this value completely
         NSString* modelKey = [[self class] modelPropertyNameForkey:inKey];
@@ -757,9 +790,8 @@ static NSRecursiveLock* _lock = nil;
         {
             //id val = [[self class] objectForUnhandledModelKey:inKey object:obj];
             //if ( !val )
-#if 0
-            NSLog( @"[CoreModel] could not find a model for key %@", inKey );
-#endif
+            if ( [self.class logWhenDataIsMissing] )
+                NSLog( @"[CoreModel-%@] could not find a model for key %@", NSStringFromClass(self.class), inKey );
             continue;
         }
 
@@ -768,9 +800,8 @@ static NSRecursiveLock* _lock = nil;
         CMModelProperty* modelProperty = [[self class] modelPropertiesForClass:self.class][modelKey];
         if ( !modelProperty )
         {
-#if 0
-            NSLog( @"[CoreModel] could not find a model for property %@", modelKey );
-#endif
+            if ( [self.class logWhenDataIsMissing] )
+                NSLog( @"[CoreModel-%@] could not find a model for property %@", NSStringFromClass(self.class), modelKey );
             continue;
         }
 
@@ -838,6 +869,8 @@ static NSRecursiveLock* _lock = nil;
 {
     return object;
 }
+
++ (BOOL)logWhenDataIsMissing { return NO; }
 
 @end
 
