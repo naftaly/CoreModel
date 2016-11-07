@@ -610,6 +610,10 @@ static NSRecursiveLock* _lock = nil;
         if ( ret )
             return ret;
         
+        ret = [[self JSONDateFormatter4] dateFromString:(NSString*)jsonObj];
+        if ( ret )
+            return ret;
+        
         NSTimeInterval time = [(NSString*)jsonObj doubleValue];
         return [NSDate dateWithTimeIntervalSince1970:time];
         
@@ -683,6 +687,18 @@ static NSRecursiveLock* _lock = nil;
         _fmt = [[NSDateFormatter alloc] init];
         //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         [_fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZ"];
+    });
+    return _fmt;
+}
+
++ (NSDateFormatter*)JSONDateFormatter4
+{
+    static NSDateFormatter* _fmt = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _fmt = [[NSDateFormatter alloc] init];
+        //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [_fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss"];
     });
     return _fmt;
 }
@@ -782,7 +798,7 @@ static NSRecursiveLock* _lock = nil;
         
         if ( [self.class shouldBypassObject:obj forKey:inKey] )
             continue;
-        
+
         // get the property key we use for this key
         // if the returned key is nil we skip this value completely
         NSString* modelKey = [[self class] modelPropertyNameForkey:inKey];
