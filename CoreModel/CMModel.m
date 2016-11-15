@@ -661,7 +661,7 @@ static NSRecursiveLock* _lock = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _fmt = [[NSDateFormatter alloc] init];
-        //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         [_fmt setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
     });
     return _fmt;
@@ -673,7 +673,7 @@ static NSRecursiveLock* _lock = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _fmt = [[NSDateFormatter alloc] init];
-        //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         [_fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"];
     });
     return _fmt;
@@ -685,7 +685,7 @@ static NSRecursiveLock* _lock = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _fmt = [[NSDateFormatter alloc] init];
-        //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         [_fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssZ"];
     });
     return _fmt;
@@ -697,7 +697,7 @@ static NSRecursiveLock* _lock = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _fmt = [[NSDateFormatter alloc] init];
-        //[_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [_fmt setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         [_fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss"];
     });
     return _fmt;
