@@ -394,6 +394,11 @@ static NSRecursiveLock* _lock = nil;
     return self;
 }
 
+- (void)updateFromPropertyList:(NSDictionary<NSString*,id>*)plist
+{
+    [self _loadModelFromJSON:plist];
+}
+
 - (instancetype)initWithData:(NSData*)data error:(NSError**)error
 {
     return [self initWithPropertyList:[[self class] JSONFromData:data error:error]];
@@ -630,7 +635,11 @@ static NSRecursiveLock* _lock = nil;
     else if ( [jsonObj isKindOfClass:[NSString class]] && type == [NSURL class] )
     {
         if ( ((NSString*)jsonObj).length )
-            return [NSURL URLWithString:(NSString*)jsonObj];
+        {
+            NSURL* url = [NSURL URLWithString:(NSString*)jsonObj];
+            if ( url.scheme.length )
+                return url;
+        }
         return nil;
     }
     else if ( [jsonObj isKindOfClass:[NSNull class]] )
@@ -792,6 +801,12 @@ static NSRecursiveLock* _lock = nil;
 
 - (void)_loadModelFromJSON:(NSDictionary<NSString*,id>*)json
 {
+    if ( ![json isKindOfClass:[NSDictionary class]] )
+    {
+        NSLog( @"[CoreModel-%@] _loadModelFromJSON, json is not NSDictionary", NSStringFromClass(self.class) );
+        return;
+    }
+    
     for ( NSString* inKey in json )
     {
         id obj = json[inKey];

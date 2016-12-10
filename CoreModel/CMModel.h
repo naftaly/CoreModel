@@ -109,6 +109,8 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
 - (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist;
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
+- (void)updateFromPropertyList:(NSDictionary<NSString*,id>*)plist;
+
 /**
  Initializes an instance of `CMModel` from the specified data.
  
