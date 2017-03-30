@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Alexander Cohen
+ * Copyright (c) 2017 Alexander Cohen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,6 +109,11 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
 - (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist;
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
+/**
+ Updates an instance of `CMModel` from the specified property list.
+ 
+ @param plist The property list you wish to represent in your model.
+ */
 - (void)updateFromPropertyList:(NSDictionary<NSString*,id>*)plist;
 
 /**

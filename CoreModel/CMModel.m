@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Alexander Cohen
+ * Copyright (c) 2017 Alexander Cohen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,12 +73,6 @@
 @end
 
 @implementation CMModelProperty
-
-- (NSString*)description
-{
-    return [NSString stringWithFormat:@"<%@:%p> %@ : %@", NSStringFromClass(self.class), self, self.name, NSStringFromClass(self.typeClass)];
-}
-
 @end
 
 typedef NSMutableDictionary<NSString*,CMModelProperty*>* ModelMap;
@@ -100,11 +94,6 @@ static NSRecursiveLock* _lock = nil;
     NSDictionary* dict = self.jsonDictionary;
     NSData* data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
     return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-}
-
-- (id)debugQuickLookObject
-{
-    return [self description];
 }
 
 + (void)initialize
@@ -386,7 +375,7 @@ static NSRecursiveLock* _lock = nil;
 
 - (instancetype)initWithPropertyList:(NSDictionary<NSString*,id>*)plist
 {
-    if ( !plist )
+    if ( !plist || plist.count == 0 )
         return nil;
     self = [self init];
     _originalValue = [plist copy];
@@ -841,12 +830,11 @@ static NSRecursiveLock* _lock = nil;
         NSArray*    convertedDict = nil;
         if ( [obj isKindOfClass:[NSDictionary class]] )
         {
-            if ( modelProperty.typeClass == [NSArray class] )
+            convertedDict = [[self class] _convertDictionaryToArrayIfPossible:obj];
+            
+            if ( modelProperty.typeClass == [NSArray class] && !convertedDict )
                 convertedDict = ((NSDictionary*)obj).allValues;
-
-            if ( !convertedDict )
-                convertedDict = [[self class] _convertDictionaryToArrayIfPossible:obj];
-
+            
             if ( convertedDict )
                 obj = convertedDict;
         }

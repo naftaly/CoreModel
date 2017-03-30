@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name = 'CoreModel'
 
-  s.version = '0.0.1'
+  s.version = '1.0.0'
   
   s.homepage = "https://github.com/naftaly/CoreModel"
   s.source = { :git => "https://github.com/naftaly/CoreModel.git", :tag => s.version }

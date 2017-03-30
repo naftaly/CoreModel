@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Alexander Cohen
+ * Copyright (c) 2017 Alexander Cohen
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -155,6 +155,13 @@
 @implementation ModelSubclass
 @end
 
+@interface List : CMModel
+@property (nonatomic,copy) NSArray<NSNumber*>* list;
+@end
+
+@implementation List
+@end
+
 @interface CoreModelTests : XCTestCase
 
 @end
@@ -178,15 +185,15 @@
     ModelSubclass* m = [[ModelSubclass alloc] initWithData:data error:nil];
     
     XCTAssertNotNil(m,@"m is nil");
-    XCTAssertEqual( m.integer, 1, @"integer property is not euqal to 1", nil );
-    XCTAssertEqual( m.boolean, YES, @"boolean property is not euqal to YES", nil );
-    XCTAssertEqual( m.other_boolean, YES, @"integer property is not euqal to 1", nil );
+    XCTAssertEqual( m.integer, 1, @"integer property is not equal to 1", nil );
+    XCTAssertEqual( m.boolean, YES, @"boolean property is not equal to YES", nil );
+    XCTAssertEqual( m.other_boolean, YES, @"integer property is not equal to 1", nil );
     XCTAssertEqualObjects( m.string, @"this is a string" );
     
     NSArray* a = @[ @(1), @"string" ];
     XCTAssertEqualObjects( m.array, a );
     
-    NSDictionary* d = @{ @"key1" : @(1), @"key2" : @"hello", @"key3" : @(YES) };
+    NSDictionary* d = @{ @"a" : @(1), @"b" : @"hello", @"c" : @(YES) };
     XCTAssertEqualObjects( m.dict, d );
 }
 
@@ -227,7 +234,17 @@
 - (void)testInit
 {
     ModelPropertyTester* tester = [[ModelPropertyTester alloc] init];
-    XCTAssertNil( tester );
+    XCTAssertNotNil( tester );
+}
+
+- (void)testArrayLikeModel
+{
+    NSDictionary* data = @{ @"list": @{ @"key0": @(0), @"key1": @(1), @"key2": @(2) } };
+    List* list = [[List alloc] initWithPropertyList:data];
+    XCTAssertNotNil( list );
+    
+    NSArray<NSNumber*>* listArray = @[ @(0), @(1), @(2) ];
+    XCTAssertEqualObjects( list.list, listArray );
 }
 
 - (void)testModels
@@ -249,7 +266,7 @@
     NSArray* a = @[ @(1), @"string" ];
     XCTAssertEqualObjects( m.array, a );
     
-    NSDictionary* d = @{ @"key1" : @(1), @"key2" : @"hello", @"key3" : @(YES) };
+    NSDictionary* d = @{ @"a" : @(1), @"b" : @"hello", @"c" : @(YES) };
     XCTAssertEqualObjects( m.dict, d );
 }
 
