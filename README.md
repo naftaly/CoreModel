@@ -1,7 +1,5 @@
 # CoreModel
 
-[![Build Status](https://travis-ci.org/naftaly/CoreModel.svg?branch=master)](https://travis-ci.org/naftaly/CoreModel)
-
 CoreModel is a lightweight framework that simplifies the process of converting your data to usable objects. The API allows you to quickly get data from anywhere and bring it into your app as instances of your objects.
 
 ## Installation
