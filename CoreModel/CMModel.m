@@ -25,7 +25,7 @@
 #import "CMModel.h"
 #import <objc/runtime.h>
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_TV
 #import <UIKit/UIKit.h>
 #else
 #import <Cocoa/Cocoa.h>
@@ -306,7 +306,7 @@ static NSRecursiveLock* _lock = nil;
     if ( [value isKindOfClass:[CMModel class]] )
         return [((CMModel*)value) jsonDictionary];
     
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_TV
     if ( [value isKindOfClass:[UIColor class]] )
     {
         CGFloat r,g,b;
@@ -799,7 +799,7 @@ static NSRecursiveLock* _lock = nil;
     for ( NSString* inKey in json )
     {
         id obj = json[inKey];
-        
+
         if ( [self.class shouldBypassObject:obj forKey:inKey] )
             continue;
 
