@@ -94,6 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
 
+- (NSDictionary*)jsonDictionaryIgnoringKeys:(NSArray<NSString*>* _Nullable)keysToIgnore;
 - (NSDictionary*)jsonDictionary;
 - (id)originalValue;
 

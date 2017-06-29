@@ -341,7 +341,7 @@ static NSRecursiveLock* _lock = nil;
     return _originalValue;
 }
 
-- (NSDictionary*)jsonDictionary
+- (NSDictionary*)jsonDictionaryIgnoringKeys:(NSArray<NSString*>*)keysToIgnore
 {
     NSMutableDictionary* json = [NSMutableDictionary dictionary];
     
@@ -353,9 +353,9 @@ static NSRecursiveLock* _lock = nil;
     {
         objc_property_t p = properties[i];
         const char* propName = property_getName(p);
-        if ( [[self class] ignoresKeyDuringEncoding:[NSString stringWithUTF8String:propName]] )
-            continue;
         NSString* key = [NSString stringWithUTF8String:propName];
+        if ( [[self class] ignoresKeyDuringEncoding:key] || [keysToIgnore containsObject:key] )
+            continue;
         id value = [self valueForKey:key];
         json[key] = [self _jsonForValue:value];
     }
@@ -364,6 +364,11 @@ static NSRecursiveLock* _lock = nil;
     //cls = class_getSuperclass(cls);
     
     return [json copy];
+}
+
+- (NSDictionary*)jsonDictionary
+{
+    return [self jsonDictionaryIgnoringKeys:nil];
 }
 
 - (instancetype)init
