@@ -630,9 +630,19 @@ static NSRecursiveLock* _lock = nil;
     {
         if ( ((NSString*)jsonObj).length )
         {
-            NSURL* url = [NSURL URLWithString:(NSString*)jsonObj];
-            if ( url.scheme.length )
+            NSURL* url = nil;
+            NSString* jsStr = (NSString*)jsonObj;
+            if ( [jsStr hasPrefix:@"/"] || [jsStr hasPrefix:@"file://"] )
+            {
+                url = [NSURL fileURLWithPath:jsStr];
                 return url;
+            }
+            else
+            {
+                url = [NSURL URLWithString:(NSString*)jsonObj];
+                if ( url.scheme.length )
+                    return url;
+            }
         }
         return nil;
     }
