@@ -145,6 +145,8 @@ static NSRecursiveLock* _lock = nil;
         {
             objc_property_t p = properties[i];
             const char* propName = property_getName(p);
+            if ( strcmp(propName, "description") == 0 )
+                continue;
             
             CMModelProperty* modelProperty = [[CMModelProperty alloc] init];
             modelProperty.name = [NSString stringWithUTF8String:propName];
@@ -583,6 +585,11 @@ static NSRecursiveLock* _lock = nil;
     return NO;
 }
 
+- (BOOL)handleObject:(id)obj forKey:(NSString*)key
+{
+    return NO;
+}
+
 + (NSString*)modelPropertyNameForkey:(NSString*)jsonKey
 {
     CMModelProperty* prop = [self modelPropertiesForClass:self][jsonKey];
@@ -817,7 +824,10 @@ static NSRecursiveLock* _lock = nil;
 
         if ( [self.class shouldBypassObject:obj forKey:inKey] )
             continue;
-
+        
+        if ( [self handleObject:obj forKey:inKey] )
+            continue;
+        
         // get the property key we use for this key
         // if the returned key is nil we skip this value completely
         NSString* modelKey = [[self class] modelPropertyNameForkey:inKey];

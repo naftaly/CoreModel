@@ -176,6 +176,11 @@ NS_CLASS_AVAILABLE(10_11,9_0) @interface CMModel : NSObject
 + (BOOL)shouldBypassObject:(id)obj forKey:(NSString*)key;
 
 /**
+ Return YES to handle this object. default is NO.
+ */
+- (BOOL)handleObject:(id)obj forKey:(NSString*)key;
+
+/**
  Returns a `Class` that maps an ObjC class to a key in your data.
  
  For example, if in your data you have an array in which each object is of type "Buddy", return [Buddy class].
