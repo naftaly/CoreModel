@@ -224,6 +224,9 @@ static NSRecursiveLock* _lock = nil;
                         {
                             modelProperty.typeEncoding = propAtt[c].value[0];
                         }
+                        else if ( s.length == 2 )
+                        {
+                        }
                         else
                         {
                             s = [s substringFromIndex:2];
