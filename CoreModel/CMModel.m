@@ -810,6 +810,20 @@ static NSRecursiveLock* _lock = nil;
     Class cls = property ? ( [property.typeClass isSubclassOfClass:[CMModel class]] ? property.typeClass : nil ) : self;
     if ( cls )
         return [[cls alloc] initWithPropertyList:dict];
+    
+    cls = [self modelClassForKey:property.name];
+    if ( cls ) {
+        NSMutableDictionary* outputDict = [NSMutableDictionary dictionary];
+        [dict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            id val = [[cls alloc] initWithPropertyList:obj];
+            if ( val )
+                outputDict[key] = val;
+            else
+                outputDict[key] = obj;
+        }];
+        return [outputDict copy];
+    }
+    
     return [dict copy];
 }
 
