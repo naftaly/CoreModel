@@ -341,6 +341,11 @@ static NSRecursiveLock* _lock = nil;
     return NO;
 }
 
++ (BOOL)ignoresKeyDuringDecoding:(NSString*)key
+{
+    return NO;
+}
+
 - (id)originalValue
 {
     return _originalValue;
@@ -768,6 +773,10 @@ static NSRecursiveLock* _lock = nil;
     if ( [self shouldBypassObject:array forKey:property.name] )
         return nil;
     
+    if (array.count == 0) {
+        return @[];
+    }
+    
     Class arrayModelClass = property ? [[self class] modelClassForKey:property.name] : self;
     if ( arrayModelClass )
     {
@@ -866,7 +875,12 @@ static NSRecursiveLock* _lock = nil;
                 NSLog( @"[CoreModel-%@] could not find a model for property %@", NSStringFromClass(self.class), modelKey );
             continue;
         }
-
+        
+        if ( [[self class] ignoresKeyDuringDecoding:modelProperty.name] )
+        {
+            continue;
+        }
+        
         id evaluatedObj = nil;
         
         NSArray*    convertedDict = nil;
